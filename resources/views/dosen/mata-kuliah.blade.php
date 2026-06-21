@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mata Kuliah Diajar - Clazzy</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; }
+        .navbar { background: #e0e0e0; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1.8rem; font-weight: bold; text-decoration: none; color: #333; }
+        .logo-icon { background: linear-gradient(135deg, #0891b2, #06b6d4); color: white; width: 45px; height: 45px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .nav-right { display: flex; align-items: center; gap: 1rem; }
+        .btn { padding: 0.6rem 1.5rem; border: 2px solid #00bcd4; border-radius: 8px; background: white; color: #00bcd4; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .btn:hover { background: #00bcd4; color: white; }
+        .btn-logout { background: #d32f2f; color: white; border-color: #d32f2f; }
+        .btn-logout:hover { background: #c62828; border-color: #c62828; }
+        
+        .tabs { background: white; padding: 0 2rem; display: flex; gap: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .tab { padding: 1rem 1.5rem; text-decoration: none; color: #666; font-weight: 500; border-bottom: 3px solid transparent; display: flex; align-items: center; gap: 0.5rem; }
+        .tab:hover { color: #9333ea; }
+        .tab.active { color: #9333ea; border-bottom-color: #9333ea; }
+        
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 2rem; }
+        .page-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
+        .page-title i { color: #9333ea; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem; }
+        .card { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); overflow: hidden; border-top: 4px solid #0891b2; transition: all 0.3s; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.12); }
+        .card-header { padding: 1.5rem 1.5rem 0.5rem; }
+        .card-header .code-badge { display: inline-block; background: #e0f2fe; color: #0369a1; padding: 0.2rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .card-header h3 { font-size: 1.25rem; font-weight: 700; color: #1f2937; }
+        .card-body { padding: 1rem 1.5rem; border-bottom: 1px solid #f3f4f6; }
+        .schedule-item { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; font-size: 0.95rem; color: #4b5563; }
+        .schedule-item i { color: #0891b2; width: 16px; text-align: center; }
+        .card-footer { padding: 1rem 1.5rem; background: #fafafa; display: flex; justify-content: space-between; align-items: center; }
+        .sks-info { font-size: 0.9rem; font-weight: 600; color: #6b7280; }
+        .empty { text-align: center; padding: 4rem; background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); color: #999; }
+        .empty i { font-size: 3rem; margin-bottom: 1rem; display: block; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="{{ route('dashboard') }}" class="logo">
+            <div class="logo-icon">C</div>
+            <span>Clazzy</span>
+        </a>
+        <div class="nav-right">
+            <span><strong>{{ auth()->user()->name }}</strong> (Dosen)</span>
+            <form action="{{ route('logout') }}" method="POST">
+                @csrf
+                <button type="submit" class="btn btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </form>
+        </div>
+    </nav>
+
+    <div class="tabs">
+        <a href="{{ route('dashboard') }}" class="tab"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="{{ route('dosen.mata-kuliah') }}" class="tab active"><i class="fas fa-chalkboard-teacher"></i> Mata Kuliah Diajar</a>
+        <a href="{{ route('dosen.materi') }}" class="tab"><i class="fas fa-book-open"></i> Upload Materi</a>
+        <a href="{{ route('dosen.tugas') }}" class="tab"><i class="fas fa-tasks"></i> Tugas Baru</a>
+        <a href="{{ route('dosen.nilai') }}" class="tab"><i class="fas fa-edit"></i> Input Nilai</a>
+    </div>
+
+    <div class="container">
+        <div class="page-title"><i class="fas fa-chalkboard-teacher"></i> Mata Kuliah yang Diampu</div>
+
+        @if($mataKuliah->isEmpty())
+            <div class="empty">
+                <i class="fas fa-book-open"></i>
+                <p>Anda belum mengampu mata kuliah apa pun saat ini.</p>
+            </div>
+        @else
+            <div class="grid">
+                @foreach($mataKuliah as $mk)
+                <div class="card">
+                    <div class="card-header">
+                        <span class="code-badge">{{ $mk->kode }}</span>
+                        <h3>{{ $mk->nama }}</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="schedule-item">
+                            <i class="fas fa-calendar-day"></i>
+                            <span>Hari: <strong>{{ $mk->jadwal['hari'] }}</strong></span>
+                        </div>
+                        <div class="schedule-item">
+                            <i class="fas fa-clock"></i>
+                            <span>Jam: <strong>{{ $mk->jadwal['jam'] }}</strong></span>
+                        </div>
+                        <div class="schedule-item">
+                            <i class="fas fa-door-open"></i>
+                            <span>Ruang: <strong>{{ $mk->jadwal['ruang'] }}</strong></span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="sks-info">{{ $mk->sks }} SKS</span>
+                        <a href="{{ route('dosen.tugas') }}?mata_kuliah={{ urlencode($mk->nama) }}" class="btn" style="padding: 0.4rem 1rem; font-size: 0.85rem;">
+                            <i class="fas fa-tasks"></i> Kelola Tugas
+                        </a>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        @endif
+    </div>
+</body>
+</html>
